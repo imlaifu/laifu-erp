@@ -1,7 +1,7 @@
 // 用户管理模块 Zustand Store
 
 import { create } from 'zustand';
-import type { User, UserCreateInput, UserUpdateInput, UserListParams, UserListResponse, Role, Department } from '../types/user';
+import type { User, UserCreateInput, UserUpdateInput, UserListParams, Role, Department } from '../types/user';
 import * as userService from '../services/userService';
 
 interface UserState {

@@ -24,10 +24,21 @@
   - `src/stores/user.ts`
   - `src/features/user/UserPage.tsx`
 
-### [ ] 2. 产品管理 (Product Management)
+### [x] 2. 产品管理 (Product Management) ✅
 - 产品信息
 - 产品分类
 - 价格管理
+- 库存管理
+- 库存流水
+- 仓库管理
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/002_products.sql`
+  - `src-tauri/src/product_commands.rs`
+  - `src/types/product.ts`
+  - `src/services/productService.ts`
+  - `src/stores/product.ts`
+  - `src/features/product/ProductPage.tsx`
 
 ### [ ] 3. 库存管理 (Inventory Management)
 - 库存数量
@@ -55,6 +66,6 @@
 - 发票管理
 
 ---
-**当前进度**: 1/7 模块完成
-**最新完成**: 用户管理模块 (2026-03-03)
-**下一步**: 产品管理模块
+**当前进度**: 2/7 模块完成
+**最新完成**: 产品管理模块 (2026-03-03)
+**下一步**: 库存管理模块

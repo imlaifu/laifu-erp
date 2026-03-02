@@ -1,7 +1,7 @@
 // 用户管理模块 Rust Commands
 // 实现完整的 CRUD 操作
 
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, params};
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
@@ -185,44 +185,45 @@ pub fn list_users(conn: &Connection, limit: i64, offset: i64) -> Result<Vec<User
 
 pub fn update_user(conn: &Connection, id: i64, input: UserUpdateInput) -> Result<User> {
     let now = Utc::now();
+    let now_str = now.to_rfc3339();
     let mut updates = Vec::new();
-    let mut params: Vec<&dyn rusqlite::types::ToSql> = Vec::new();
+    let mut sql_params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
     
     if let Some(username) = input.username {
         updates.push("username = ?");
-        params.push(&username);
+        sql_params.push(Box::new(username));
     }
     if let Some(email) = input.email {
         updates.push("email = ?");
-        params.push(&email);
+        sql_params.push(Box::new(email));
     }
     if let Some(password) = input.password {
         updates.push("password_hash = ?");
-        params.push(&hash_password(&password));
+        sql_params.push(Box::new(hash_password(&password)));
     }
     if let Some(display_name) = input.display_name {
         updates.push("display_name = ?");
-        params.push(&display_name);
+        sql_params.push(Box::new(display_name));
     }
     if let Some(avatar_url) = input.avatar_url {
         updates.push("avatar_url = ?");
-        params.push(&avatar_url);
+        sql_params.push(Box::new(avatar_url));
     }
     if let Some(phone) = input.phone {
         updates.push("phone = ?");
-        params.push(&phone);
+        sql_params.push(Box::new(phone));
     }
     if let Some(department_id) = input.department_id {
         updates.push("department_id = ?");
-        params.push(&department_id);
+        sql_params.push(Box::new(department_id));
     }
     if let Some(role_id) = input.role_id {
         updates.push("role_id = ?");
-        params.push(&role_id);
+        sql_params.push(Box::new(role_id));
     }
     if let Some(status) = input.status {
         updates.push("status = ?");
-        params.push(&status);
+        sql_params.push(Box::new(status));
     }
     
     if updates.is_empty() {
@@ -230,24 +231,13 @@ pub fn update_user(conn: &Connection, id: i64, input: UserUpdateInput) -> Result
     }
     
     updates.push("updated_at = ?");
-    params.push(&now.to_rfc3339());
-    params.push(&id);
+    sql_params.push(Box::new(now_str));
+    sql_params.push(Box::new(id));
     
     let sql = format!("UPDATE users SET {} WHERE id = ?", updates.join(", "));
     
-    // Need to convert params to the right format for execute
-    match updates.len() {
-        1 => conn.execute(&sql, params![params[0], params[1]]),
-        2 => conn.execute(&sql, params![params[0], params[1], params[2]]),
-        3 => conn.execute(&sql, params![params[0], params[1], params[2], params[3]]),
-        4 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4]]),
-        5 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4], params[5]]),
-        6 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4], params[5], params[6]]),
-        7 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7]]),
-        8 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8]]),
-        9 => conn.execute(&sql, params![params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9]]),
-        _ => conn.execute(&sql, rusqlite::params_from_iter(params.iter())),
-    }?;
+    let param_refs: Vec<&dyn rusqlite::types::ToSql> = sql_params.iter().map(|b| b.as_ref()).collect();
+    conn.execute(&sql, rusqlite::params_from_iter(param_refs))?;
     
     get_user(conn, id)
 }

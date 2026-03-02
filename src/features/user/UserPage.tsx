@@ -1,8 +1,8 @@
 // 用户管理模块 UI 组件
 
 import React, { useState, useEffect } from 'react';
-import { useUserStore, selectUsers, selectRoles, selectDepartments, selectOperationLoading } from '../stores/user';
-import type { User, UserCreateInput, UserUpdateInput } from '../types/user';
+import { useUserStore } from '../../stores/user';
+import type { User, UserCreateInput, UserUpdateInput } from '../../types/user';
 
 export function UserPage() {
   const {
@@ -18,12 +18,11 @@ export function UserPage() {
     roles,
     departments,
     operationLoading,
-    clearError,
   } = useUserStore();
 
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<Partial<UserCreateInput | UserUpdateInput>>({
+  const [formData, setFormData] = useState<Partial<UserCreateInput & UserUpdateInput>>({
     username: '',
     email: '',
     password: '',
@@ -251,7 +250,7 @@ export function UserPage() {
               }
             >
               <option value="">请选择部门</option>
-              {departments.map((dept) => (
+              {departments.map((dept: { id: number; name: string }) => (
                 <option key={dept.id} value={dept.id}>
                   {dept.name}
                 </option>
@@ -268,7 +267,7 @@ export function UserPage() {
               }
             >
               <option value="">请选择角色</option>
-              {roles.map((role) => (
+              {roles.map((role: { id: number; name: string }) => (
                 <option key={role.id} value={role.id}>
                   {role.name}
                 </option>
