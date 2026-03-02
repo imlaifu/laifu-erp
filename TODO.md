@@ -40,10 +40,21 @@
   - `src/stores/product.ts`
   - `src/features/product/ProductPage.tsx`
 
-### [ ] 3. 库存管理 (Inventory Management)
+### [x] 3. 库存管理 (Inventory Management) ✅
 - 库存数量
 - 入库出库
 - 库存预警
+- 库存盘点
+- 库存调拨
+- 库存统计
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/003_inventory.sql`
+  - `src-tauri/src/inventory_commands.rs`
+  - `src/types/inventory.ts`
+  - `src/services/inventoryService.ts`
+  - `src/stores/inventory.ts`
+  - `src/features/inventory/InventoryPage.tsx`
 
 ### [ ] 4. 订单管理 (Order Management)
 - 销售订单
@@ -66,6 +77,6 @@
 - 发票管理
 
 ---
-**当前进度**: 2/7 模块完成
-**最新完成**: 产品管理模块 (2026-03-03)
-**下一步**: 库存管理模块
+**当前进度**: 3/7 模块完成
+**最新完成**: 库存管理模块 (2026-03-03)
+**下一步**: 订单管理模块

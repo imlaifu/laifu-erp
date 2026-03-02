@@ -502,6 +502,20 @@ pub fn get_inventory(conn: &Connection, product_id: i64, warehouse_id: Option<i6
 }
 
 pub fn list_inventory(conn: &Connection, warehouse_id: Option<i64>) -> Result<Vec<ProductInventory>> {
+    fn map_inventory_row(row: &rusqlite::Row) -> Result<ProductInventory> {
+        Ok(ProductInventory {
+            id: row.get(0)?,
+            product_id: row.get(1)?,
+            warehouse_id: row.get(2)?,
+            quantity: row.get(3)?,
+            reserved_quantity: row.get(4)?,
+            available_quantity: row.get(5)?,
+            last_stock_check: row.get::<_, Option<String>>(6)?.and_then(|s| DateTime::parse_from_rfc3339(&s).ok()).map(|d| d.with_timezone(&Utc)),
+            created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?).unwrap().with_timezone(&Utc),
+            updated_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?).unwrap().with_timezone(&Utc),
+        })
+    }
+    
     let query = if warehouse_id.is_some() {
         "SELECT id, product_id, warehouse_id, quantity, reserved_quantity, available_quantity, last_stock_check, created_at, updated_at FROM product_inventory WHERE warehouse_id = ?1 ORDER BY product_id"
     } else {
@@ -510,37 +524,15 @@ pub fn list_inventory(conn: &Connection, warehouse_id: Option<i64>) -> Result<Ve
     
     let mut stmt = conn.prepare(query)?;
     
-    let inventory = if let Some(wid) = warehouse_id {
-        stmt.query_map(params![wid], |row| {
-            Ok(ProductInventory {
-                id: row.get(0)?,
-                product_id: row.get(1)?,
-                warehouse_id: row.get(2)?,
-                quantity: row.get(3)?,
-                reserved_quantity: row.get(4)?,
-                available_quantity: row.get(5)?,
-                last_stock_check: row.get::<_, Option<String>>(6)?.and_then(|s| DateTime::parse_from_rfc3339(&s).ok()).map(|d| d.with_timezone(&Utc)),
-                created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?).unwrap().with_timezone(&Utc),
-                updated_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?).unwrap().with_timezone(&Utc),
-            })
-        })?
+    if let Some(wid) = warehouse_id {
+        let inventory: Vec<ProductInventory> = stmt.query_map(params![wid], |row| map_inventory_row(row))?
+            .filter_map(|r| r.ok()).collect();
+        Ok(inventory)
     } else {
-        stmt.query_map([], |row| {
-            Ok(ProductInventory {
-                id: row.get(0)?,
-                product_id: row.get(1)?,
-                warehouse_id: row.get(2)?,
-                quantity: row.get(3)?,
-                reserved_quantity: row.get(4)?,
-                available_quantity: row.get(5)?,
-                last_stock_check: row.get::<_, Option<String>>(6)?.and_then(|s| DateTime::parse_from_rfc3339(&s).ok()).map(|d| d.with_timezone(&Utc)),
-                created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?).unwrap().with_timezone(&Utc),
-                updated_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?).unwrap().with_timezone(&Utc),
-            })
-        })?
-    };
-    
-    inventory.collect()
+        let inventory: Vec<ProductInventory> = stmt.query_map([], |row| map_inventory_row(row))?
+            .filter_map(|r| r.ok()).collect();
+        Ok(inventory)
+    }
 }
 
 pub fn create_inventory(conn: &Connection, product_id: i64, warehouse_id: Option<i64>, quantity: i64) -> Result<ProductInventory> {
@@ -662,6 +654,24 @@ pub fn get_transaction(conn: &Connection, id: i64) -> Result<InventoryTransactio
 }
 
 pub fn list_transactions(conn: &Connection, product_id: Option<i64>, limit: i64, offset: i64) -> Result<Vec<InventoryTransaction>> {
+    fn map_transaction_row(row: &rusqlite::Row) -> Result<InventoryTransaction> {
+        Ok(InventoryTransaction {
+            id: row.get(0)?,
+            product_id: row.get(1)?,
+            warehouse_id: row.get(2)?,
+            transaction_type: row.get(3)?,
+            quantity: row.get(4)?,
+            before_quantity: row.get(5)?,
+            after_quantity: row.get(6)?,
+            reference_type: row.get(7)?,
+            reference_id: row.get(8)?,
+            reason: row.get(9)?,
+            operator_id: row.get(10)?,
+            notes: row.get(11)?,
+            created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(12)?).unwrap().with_timezone(&Utc),
+        })
+    }
+    
     let query = if product_id.is_some() {
         "SELECT id, product_id, warehouse_id, transaction_type, quantity, before_quantity, after_quantity, reference_type, reference_id, reason, operator_id, notes, created_at FROM inventory_transactions WHERE product_id = ?1 ORDER BY created_at DESC LIMIT ?2 OFFSET ?3"
     } else {
@@ -670,45 +680,15 @@ pub fn list_transactions(conn: &Connection, product_id: Option<i64>, limit: i64,
     
     let mut stmt = conn.prepare(query)?;
     
-    let transactions = if let Some(pid) = product_id {
-        stmt.query_map(params![pid, limit, offset], |row| {
-            Ok(InventoryTransaction {
-                id: row.get(0)?,
-                product_id: row.get(1)?,
-                warehouse_id: row.get(2)?,
-                transaction_type: row.get(3)?,
-                quantity: row.get(4)?,
-                before_quantity: row.get(5)?,
-                after_quantity: row.get(6)?,
-                reference_type: row.get(7)?,
-                reference_id: row.get(8)?,
-                reason: row.get(9)?,
-                operator_id: row.get(10)?,
-                notes: row.get(11)?,
-                created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(12)?).unwrap().with_timezone(&Utc),
-            })
-        })?
+    if let Some(pid) = product_id {
+        let transactions: Vec<InventoryTransaction> = stmt.query_map(params![pid, limit, offset], |row| map_transaction_row(row))?
+            .filter_map(|r| r.ok()).collect();
+        Ok(transactions)
     } else {
-        stmt.query_map(params![limit, offset], |row| {
-            Ok(InventoryTransaction {
-                id: row.get(0)?,
-                product_id: row.get(1)?,
-                warehouse_id: row.get(2)?,
-                transaction_type: row.get(3)?,
-                quantity: row.get(4)?,
-                before_quantity: row.get(5)?,
-                after_quantity: row.get(6)?,
-                reference_type: row.get(7)?,
-                reference_id: row.get(8)?,
-                reason: row.get(9)?,
-                operator_id: row.get(10)?,
-                notes: row.get(11)?,
-                created_at: DateTime::parse_from_rfc3339(&row.get::<_, String>(12)?).unwrap().with_timezone(&Utc),
-            })
-        })?
-    };
-    
-    transactions.collect()
+        let transactions: Vec<InventoryTransaction> = stmt.query_map(params![limit, offset], |row| map_transaction_row(row))?
+            .filter_map(|r| r.ok()).collect();
+        Ok(transactions)
+    }
 }
 
 // ==================== 仓库管理 ====================

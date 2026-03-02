@@ -2,6 +2,7 @@
 
 mod user_commands;
 mod product_commands;
+mod inventory_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -293,6 +294,158 @@ fn delete_warehouse(db: State<Database>, id: i64) -> Result<bool, String> {
     product_commands::delete_warehouse(&conn, id).map_err(|e| e.to_string())
 }
 
+// ==================== 库存管理模块命令 (003_inventory.sql) ====================
+
+// 库存预警
+#[tauri::command]
+fn create_inventory_alert(db: State<Database>, input: inventory_commands::InventoryAlertInput) -> Result<inventory_commands::InventoryAlert, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::create_inventory_alert(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_inventory_alert(db: State<Database>, id: i64) -> Result<inventory_commands::InventoryAlert, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_alert(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_inventory_alerts(db: State<Database>, warehouse_id: Option<i64>, alert_status: Option<String>) -> Result<Vec<inventory_commands::InventoryAlertWithProduct>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::list_inventory_alerts(&conn, warehouse_id, alert_status).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_inventory_alert(db: State<Database>, id: i64, input: inventory_commands::InventoryAlertInput) -> Result<inventory_commands::InventoryAlert, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::update_inventory_alert(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_inventory_alert(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::delete_inventory_alert(&conn, id).map_err(|e| e.to_string())
+}
+
+// 库存盘点
+#[tauri::command]
+fn create_inventory_count(db: State<Database>, input: inventory_commands::InventoryCountInput) -> Result<inventory_commands::InventoryCount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::create_inventory_count(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_inventory_count(db: State<Database>, id: i64) -> Result<inventory_commands::InventoryCount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_count(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_inventory_counts(db: State<Database>, warehouse_id: Option<i64>, status: Option<String>) -> Result<Vec<inventory_commands::InventoryCount>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::list_inventory_counts(&conn, warehouse_id, status).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_inventory_count_status(db: State<Database>, id: i64, status: String, operator_id: Option<i64>) -> Result<inventory_commands::InventoryCount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::update_inventory_count_status(&conn, id, status, operator_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_inventory_count(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::delete_inventory_count(&conn, id).map_err(|e| e.to_string())
+}
+
+// 库存盘点明细
+#[tauri::command]
+fn create_inventory_count_item(db: State<Database>, input: inventory_commands::InventoryCountItemInput) -> Result<inventory_commands::InventoryCountItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::create_inventory_count_item(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_inventory_count_item(db: State<Database>, id: i64) -> Result<inventory_commands::InventoryCountItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_count_item(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_inventory_count_items(db: State<Database>, count_id: i64) -> Result<Vec<inventory_commands::InventoryCountItem>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::list_inventory_count_items(&conn, count_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_inventory_count_item_status(db: State<Database>, id: i64, status: String) -> Result<inventory_commands::InventoryCountItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::update_inventory_count_item_status(&conn, id, status).map_err(|e| e.to_string())
+}
+
+// 库存调拨
+#[tauri::command]
+fn create_inventory_transfer(db: State<Database>, input: inventory_commands::InventoryTransferInput) -> Result<inventory_commands::InventoryTransfer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::create_inventory_transfer(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_inventory_transfer(db: State<Database>, id: i64) -> Result<inventory_commands::InventoryTransfer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_transfer(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_inventory_transfers(db: State<Database>, from_warehouse_id: Option<i64>, to_warehouse_id: Option<i64>, status: Option<String>) -> Result<Vec<inventory_commands::InventoryTransfer>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::list_inventory_transfers(&conn, from_warehouse_id, to_warehouse_id, status).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_inventory_transfer_status(db: State<Database>, id: i64, status: String, operator_id: Option<i64>) -> Result<inventory_commands::InventoryTransfer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::update_inventory_transfer_status(&conn, id, status, operator_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_inventory_transfer(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::delete_inventory_transfer(&conn, id).map_err(|e| e.to_string())
+}
+
+// 库存调拨明细
+#[tauri::command]
+fn create_inventory_transfer_item(db: State<Database>, input: inventory_commands::InventoryTransferItemInput) -> Result<inventory_commands::InventoryTransferItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::create_inventory_transfer_item(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_inventory_transfer_item(db: State<Database>, id: i64) -> Result<inventory_commands::InventoryTransferItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_transfer_item(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_inventory_transfer_items(db: State<Database>, transfer_id: i64) -> Result<Vec<inventory_commands::InventoryTransferItem>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::list_inventory_transfer_items(&conn, transfer_id).map_err(|e| e.to_string())
+}
+
+// 库存统计
+#[tauri::command]
+fn get_inventory_summary(db: State<Database>, warehouse_id: Option<i64>) -> Result<inventory_commands::InventorySummary, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_inventory_summary(&conn, warehouse_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_low_stock_products(db: State<Database>, warehouse_id: Option<i64>) -> Result<Vec<inventory_commands::LowStockProduct>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    inventory_commands::get_low_stock_products(&conn, warehouse_id).map_err(|e| e.to_string())
+}
+
 // ==================== 应用初始化 ====================
 
 fn init_db(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -310,6 +463,7 @@ fn init_db(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let migrations = vec![
         include_str!("../migrations/001_users.sql"),
         include_str!("../migrations/002_products.sql"),
+        include_str!("../migrations/003_inventory.sql"),
     ];
     
     for migration in migrations {
@@ -368,6 +522,36 @@ pub fn run() {
             list_warehouses,
             update_warehouse,
             delete_warehouse,
+            // 库存管理模块 - 预警
+            create_inventory_alert,
+            get_inventory_alert,
+            list_inventory_alerts,
+            update_inventory_alert,
+            delete_inventory_alert,
+            // 库存管理模块 - 盘点
+            create_inventory_count,
+            get_inventory_count,
+            list_inventory_counts,
+            update_inventory_count_status,
+            delete_inventory_count,
+            // 库存管理模块 - 盘点明细
+            create_inventory_count_item,
+            get_inventory_count_item,
+            list_inventory_count_items,
+            update_inventory_count_item_status,
+            // 库存管理模块 - 调拨
+            create_inventory_transfer,
+            get_inventory_transfer,
+            list_inventory_transfers,
+            update_inventory_transfer_status,
+            delete_inventory_transfer,
+            // 库存管理模块 - 调拨明细
+            create_inventory_transfer_item,
+            get_inventory_transfer_item,
+            list_inventory_transfer_items,
+            // 库存管理模块 - 统计
+            get_inventory_summary,
+            get_low_stock_products,
         ])
         .setup(|app| {
             init_db(app.handle())?;
