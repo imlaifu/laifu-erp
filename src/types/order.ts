@@ -345,6 +345,7 @@ export interface OrderStatusHistory {
 export interface OrderStatusChangeInput {
   orderType: 'sales' | 'purchase';
   orderId: number;
+  oldStatus?: string | null;
   newStatus: string;
   changeReason?: string | null;
   changedBy?: number | null;

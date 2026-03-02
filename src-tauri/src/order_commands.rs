@@ -341,6 +341,7 @@ pub struct OrderStatusHistory {
 pub struct OrderStatusChangeInput {
     pub order_type: String,
     pub order_id: i64,
+    pub old_status: Option<String>,
     pub new_status: String,
     pub change_reason: Option<String>,
     pub changed_by: Option<i64>,

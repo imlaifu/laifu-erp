@@ -4,6 +4,7 @@ mod user_commands;
 mod product_commands;
 mod inventory_commands;
 mod order_commands;
+mod customer_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -449,35 +450,47 @@ fn get_low_stock_products(db: State<Database>, warehouse_id: Option<i64>) -> Res
 
 // ==================== 订单管理相关命令 ====================
 
-// 客户
+// 客户 (使用 order_commands 中的简化版本用于订单关联)
+// 完整的客户管理请使用下方的客户管理模块命令
+
+// ==================== 客户管理模块命令 (独立模块) ====================
+
+// 客户 CRUD
 #[tauri::command]
-fn create_customer(db: State<Database>, input: order_commands::CustomerCreateInput) -> Result<order_commands::Customer, String> {
+fn create_customer(db: State<Database>, input: customer_commands::CustomerCreateInput) -> Result<customer_commands::Customer, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::create_customer(&conn, input).map_err(|e| e.to_string())
+    customer_commands::create_customer(&conn, input).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn get_customer(db: State<Database>, id: i64) -> Result<order_commands::Customer, String> {
+fn get_customer(db: State<Database>, id: i64) -> Result<customer_commands::Customer, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::get_customer(&conn, id).map_err(|e| e.to_string())
+    customer_commands::get_customer(&conn, id).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn list_customers(db: State<Database>, limit: i64, offset: i64, status: Option<String>, level: Option<String>, search: Option<String>) -> Result<Vec<order_commands::Customer>, String> {
+fn list_customers(db: State<Database>, params: customer_commands::CustomerListParams) -> Result<customer_commands::CustomerListResponse, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::list_customers(&conn, limit, offset, status, level, search).map_err(|e| e.to_string())
+    customer_commands::list_customers(&conn, params).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn update_customer(db: State<Database>, id: i64, input: order_commands::CustomerUpdateInput) -> Result<order_commands::Customer, String> {
+fn update_customer(db: State<Database>, id: i64, input: customer_commands::CustomerUpdateInput) -> Result<customer_commands::Customer, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::update_customer(&conn, id, input).map_err(|e| e.to_string())
+    customer_commands::update_customer(&conn, id, input).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn delete_customer(db: State<Database>, id: i64) -> Result<bool, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::delete_customer(&conn, id).map_err(|e| e.to_string())
+    customer_commands::delete_customer(&conn, id).map_err(|e| e.to_string())
+}
+
+// 客户统计
+#[tauri::command]
+fn get_customer_statistics(db: State<Database>) -> Result<serde_json::Value, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_statistics(&conn).map_err(|e| e.to_string())
 }
 
 // 供应商
@@ -509,6 +522,157 @@ fn update_supplier(db: State<Database>, id: i64, input: order_commands::Supplier
 fn delete_supplier(db: State<Database>, id: i64) -> Result<bool, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     order_commands::delete_supplier(&conn, id).map_err(|e| e.to_string())
+}
+
+// ==================== 客户管理模块命令 (独立模块) ====================
+
+// 客户联系记录
+#[tauri::command]
+fn create_customer_contact(db: State<Database>, input: customer_commands::CustomerContactCreateInput) -> Result<customer_commands::CustomerContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::create_customer_contact(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer_contact(db: State<Database>, id: i64) -> Result<customer_commands::CustomerContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_contact(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_customer_contacts(db: State<Database>, customer_id: i64) -> Result<Vec<customer_commands::CustomerContact>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::list_customer_contacts(&conn, customer_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_customer_contact(db: State<Database>, id: i64, input: customer_commands::CustomerContactUpdateInput) -> Result<customer_commands::CustomerContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::update_customer_contact(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_customer_contact(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::delete_customer_contact(&conn, id).map_err(|e| e.to_string())
+}
+
+// 客户等级配置
+#[tauri::command]
+fn create_customer_level_config(db: State<Database>, input: customer_commands::CustomerLevelConfigCreateInput) -> Result<customer_commands::CustomerLevelConfig, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::create_customer_level_config(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer_level_config(db: State<Database>, id: i64) -> Result<customer_commands::CustomerLevelConfig, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_level_config(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_customer_level_configs(db: State<Database>, status: Option<String>) -> Result<Vec<customer_commands::CustomerLevelConfig>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::list_customer_level_configs(&conn, status).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_customer_level_config(db: State<Database>, id: i64, input: customer_commands::CustomerLevelConfigUpdateInput) -> Result<customer_commands::CustomerLevelConfig, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::update_customer_level_config(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_customer_level_config(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::delete_customer_level_config(&conn, id).map_err(|e| e.to_string())
+}
+
+// 客户标签
+#[tauri::command]
+fn create_customer_tag(db: State<Database>, input: customer_commands::CustomerTagCreateInput) -> Result<customer_commands::CustomerTag, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::create_customer_tag(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer_tag(db: State<Database>, id: i64) -> Result<customer_commands::CustomerTag, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_tag(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_customer_tags(db: State<Database>) -> Result<Vec<customer_commands::CustomerTag>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::list_customer_tags(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_customer_tag(db: State<Database>, id: i64, input: customer_commands::CustomerTagUpdateInput) -> Result<customer_commands::CustomerTag, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::update_customer_tag(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_customer_tag(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::delete_customer_tag(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn add_customer_tag(db: State<Database>, customer_id: i64, tag_id: i64) -> Result<i64, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::add_customer_tag(&conn, customer_id, tag_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn remove_customer_tag(db: State<Database>, customer_id: i64, tag_id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::remove_customer_tag(&conn, customer_id, tag_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer_tags(db: State<Database>, customer_id: i64) -> Result<Vec<customer_commands::CustomerTag>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_tags(&conn, customer_id).map_err(|e| e.to_string())
+}
+
+// 客户跟进计划
+#[tauri::command]
+fn create_customer_follow_up(db: State<Database>, input: customer_commands::CustomerFollowUpCreateInput) -> Result<customer_commands::CustomerFollowUp, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::create_customer_follow_up(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer_follow_up(db: State<Database>, id: i64) -> Result<customer_commands::CustomerFollowUp, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_follow_up(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_customer_follow_ups(db: State<Database>, params: customer_commands::CustomerFollowUpListParams) -> Result<Vec<customer_commands::CustomerFollowUp>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::list_customer_follow_ups(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_customer_follow_up(db: State<Database>, id: i64, input: customer_commands::CustomerFollowUpUpdateInput) -> Result<customer_commands::CustomerFollowUp, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::update_customer_follow_up(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_customer_follow_up(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::delete_customer_follow_up(&conn, id).map_err(|e| e.to_string())
+}
+
+// 客户统计
+#[tauri::command]
+fn get_customer_statistics(db: State<Database>) -> Result<customer_commands::CustomerStatistics, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    customer_commands::get_customer_statistics(&conn).map_err(|e| e.to_string())
 }
 
 // 销售订单
@@ -616,6 +780,7 @@ fn init_db(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         include_str!("../migrations/002_products.sql"),
         include_str!("../migrations/003_inventory.sql"),
         include_str!("../migrations/004_orders.sql"),
+        include_str!("../migrations/005_customers.sql"),
     ];
     
     for migration in migrations {
@@ -704,12 +869,41 @@ pub fn run() {
             // 库存管理模块 - 统计
             get_inventory_summary,
             get_low_stock_products,
-            // 客户管理
+            // 客户管理 - 客户 CRUD
             create_customer,
             get_customer,
             list_customers,
             update_customer,
             delete_customer,
+            // 客户管理 - 联系记录
+            create_customer_contact,
+            get_customer_contact,
+            list_customer_contacts,
+            update_customer_contact,
+            delete_customer_contact,
+            // 客户管理 - 等级配置
+            create_customer_level_config,
+            get_customer_level_config,
+            list_customer_level_configs,
+            update_customer_level_config,
+            delete_customer_level_config,
+            // 客户管理 - 标签
+            create_customer_tag,
+            get_customer_tag,
+            list_customer_tags,
+            update_customer_tag,
+            delete_customer_tag,
+            add_customer_tag,
+            remove_customer_tag,
+            get_customer_tags,
+            // 客户管理 - 跟进计划
+            create_customer_follow_up,
+            get_customer_follow_up,
+            list_customer_follow_ups,
+            update_customer_follow_up,
+            delete_customer_follow_up,
+            // 客户管理 - 统计
+            get_customer_statistics,
             // 供应商管理
             create_supplier,
             get_supplier,

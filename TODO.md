@@ -71,10 +71,20 @@
   - `src/stores/order.ts`
   - `src/features/order/OrderPage.tsx`
 
-### [ ] 5. 客户管理 (Customer Management)
+### [x] 5. 客户管理 (Customer Management) ✅
 - 客户信息
 - 联系记录
 - 客户分级
+- 客户标签
+- 跟进计划
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/005_customers.sql`
+  - `src-tauri/src/customer_commands.rs`
+  - `src/types/customer.ts`
+  - `src/services/customerService.ts`
+  - `src/stores/customer.ts`
+  - `src/features/customer/CustomerPage.tsx`
 
 ### [ ] 6. 供应商管理 (Supplier Management)
 - 供应商信息
@@ -87,6 +97,6 @@
 - 发票管理
 
 ---
-**当前进度**: 4/7 模块完成
-**最新完成**: 订单管理模块 (2026-03-03)
-**下一步**: 客户管理模块
+**当前进度**: 5/7 模块完成
+**最新完成**: 客户管理模块 (2026-03-03)
+**下一步**: 供应商管理模块
