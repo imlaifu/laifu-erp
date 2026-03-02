@@ -86,17 +86,40 @@
   - `src/stores/customer.ts`
   - `src/features/customer/CustomerPage.tsx`
 
-### [ ] 6. 供应商管理 (Supplier Management)
+### [x] 6. 供应商管理 (Supplier Management) ✅
 - 供应商信息
-- 采购记录
+- 联系人管理
+- 联系记录
 - 供应商评估
+- 供应产品管理
+- 供应商分级
+- 供应商标签
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/006_suppliers.sql`
+  - `src-tauri/src/supplier_commands.rs`
+  - `src/types/supplier.ts`
+  - `src/services/supplierService.ts`
+  - `src/stores/supplier.ts`
+  - `src/features/supplier/SupplierPage.tsx`
 
-### [ ] 7. 财务管理 (Finance Management)
+### [x] 7. 财务管理 (Finance Management) ✅
 - 收支记录
 - 财务报表
 - 发票管理
+- 会计科目
+- 收支分类
+- 应收应付
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/007_finance.sql`
+  - `src-tauri/src/finance_commands.rs`
+  - `src/types/finance.ts`
+  - `src/services/financeService.ts`
+  - `src/stores/finance.ts`
+  - `src/features/finance/FinancePage.tsx`
 
 ---
-**当前进度**: 5/7 模块完成
-**最新完成**: 客户管理模块 (2026-03-03)
-**下一步**: 供应商管理模块
+**当前进度**: 7/7 模块完成
+**最新完成**: 财务管理模块 (2026-03-03)
+**下一步**: 所有核心模块已完成，进入测试和优化阶段

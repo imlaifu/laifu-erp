@@ -5,6 +5,8 @@ mod product_commands;
 mod inventory_commands;
 mod order_commands;
 mod customer_commands;
+mod supplier_commands;
+mod finance_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -493,35 +495,328 @@ fn get_customer_statistics(db: State<Database>) -> Result<serde_json::Value, Str
     customer_commands::get_customer_statistics(&conn).map_err(|e| e.to_string())
 }
 
-// 供应商
+// ==================== 供应商管理模块命令 ====================
+
+// 供应商 CRUD
 #[tauri::command]
-fn create_supplier(db: State<Database>, input: order_commands::SupplierCreateInput) -> Result<order_commands::Supplier, String> {
+fn create_supplier(db: State<Database>, input: supplier_commands::SupplierCreateInput) -> Result<supplier_commands::Supplier, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::create_supplier(&conn, input).map_err(|e| e.to_string())
+    supplier_commands::create_supplier(&conn, input).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn get_supplier(db: State<Database>, id: i64) -> Result<order_commands::Supplier, String> {
+fn get_supplier(db: State<Database>, id: i64) -> Result<supplier_commands::Supplier, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::get_supplier(&conn, id).map_err(|e| e.to_string())
+    supplier_commands::get_supplier(&conn, id).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn list_suppliers(db: State<Database>, limit: i64, offset: i64, status: Option<String>, search: Option<String>) -> Result<Vec<order_commands::Supplier>, String> {
+fn list_suppliers(db: State<Database>, params: supplier_commands::SupplierListParams) -> Result<supplier_commands::SupplierListResponse, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::list_suppliers(&conn, limit, offset, status, search).map_err(|e| e.to_string())
+    supplier_commands::list_suppliers(&conn, params).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn update_supplier(db: State<Database>, id: i64, input: order_commands::SupplierUpdateInput) -> Result<order_commands::Supplier, String> {
+fn update_supplier(db: State<Database>, id: i64, input: supplier_commands::SupplierUpdateInput) -> Result<supplier_commands::Supplier, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::update_supplier(&conn, id, input).map_err(|e| e.to_string())
+    supplier_commands::update_supplier(&conn, id, input).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn delete_supplier(db: State<Database>, id: i64) -> Result<bool, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    order_commands::delete_supplier(&conn, id).map_err(|e| e.to_string())
+    supplier_commands::delete_supplier(&conn, id).map_err(|e| e.to_string())
+}
+
+// 供应商联系人
+#[tauri::command]
+fn create_supplier_contact(db: State<Database>, input: supplier_commands::SupplierContactCreateInput) -> Result<supplier_commands::SupplierContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::create_supplier_contact(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_supplier_contact(db: State<Database>, id: i64) -> Result<supplier_commands::SupplierContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::get_supplier_contact(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_supplier_contacts(db: State<Database>, supplier_id: i64) -> Result<Vec<supplier_commands::SupplierContact>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_contacts(&conn, supplier_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_supplier_contact(db: State<Database>, id: i64, input: supplier_commands::SupplierContactUpdateInput) -> Result<supplier_commands::SupplierContact, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::update_supplier_contact(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_supplier_contact(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::delete_supplier_contact(&conn, id).map_err(|e| e.to_string())
+}
+
+// 供应商联系记录
+#[tauri::command]
+fn create_supplier_interaction(db: State<Database>, input: supplier_commands::SupplierInteractionCreateInput) -> Result<supplier_commands::SupplierInteraction, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::create_supplier_interaction(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_supplier_interactions(db: State<Database>, supplier_id: i64, limit: i64, offset: i64) -> Result<Vec<supplier_commands::SupplierInteraction>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_interactions(&conn, supplier_id, limit, offset).map_err(|e| e.to_string())
+}
+
+// 供应商分级
+#[tauri::command]
+fn list_supplier_levels(db: State<Database>) -> Result<Vec<supplier_commands::SupplierLevel>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_levels(&conn).map_err(|e| e.to_string())
+}
+
+// 供应商标签
+#[tauri::command]
+fn list_supplier_tags(db: State<Database>) -> Result<Vec<supplier_commands::SupplierTag>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_tags(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_supplier_tag(db: State<Database>, name: String, color: Option<String>, description: Option<String>) -> Result<supplier_commands::SupplierTag, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::create_supplier_tag(&conn, &name, color, description).map_err(|e| e.to_string())
+}
+
+// 供应商评估
+#[tauri::command]
+fn create_supplier_evaluation(db: State<Database>, input: supplier_commands::SupplierEvaluationCreateInput) -> Result<supplier_commands::SupplierEvaluation, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::create_supplier_evaluation(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_supplier_evaluation(db: State<Database>, id: i64) -> Result<supplier_commands::SupplierEvaluation, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::get_supplier_evaluation(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_supplier_evaluations(db: State<Database>, params: supplier_commands::SupplierEvaluationListParams) -> Result<Vec<supplier_commands::SupplierEvaluation>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_evaluations(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_supplier_evaluation(db: State<Database>, id: i64, input: supplier_commands::SupplierEvaluationUpdateInput) -> Result<supplier_commands::SupplierEvaluation, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::update_supplier_evaluation(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_supplier_evaluation(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::delete_supplier_evaluation(&conn, id).map_err(|e| e.to_string())
+}
+
+// 供应商产品
+#[tauri::command]
+fn create_supplier_product(db: State<Database>, input: supplier_commands::SupplierProductCreateInput) -> Result<supplier_commands::SupplierProduct, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::create_supplier_product(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_supplier_product(db: State<Database>, id: i64) -> Result<supplier_commands::SupplierProduct, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::get_supplier_product(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_supplier_products(db: State<Database>, supplier_id: i64) -> Result<Vec<supplier_commands::SupplierProduct>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::list_supplier_products(&conn, supplier_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_supplier_product(db: State<Database>, id: i64, input: supplier_commands::SupplierProductUpdateInput) -> Result<supplier_commands::SupplierProduct, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::update_supplier_product(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_supplier_product(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::delete_supplier_product(&conn, id).map_err(|e| e.to_string())
+}
+
+// 供应商统计
+#[tauri::command]
+fn get_supplier_statistics(db: State<Database>) -> Result<serde_json::Value, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    supplier_commands::get_supplier_statistics(&conn).map_err(|e| e.to_string())
+}
+
+// ==================== 财务管理模块命令 ====================
+
+#[tauri::command]
+fn create_finance_transaction(db: State<Database>, input: finance_commands::FinanceTransactionCreateInput) -> Result<finance_commands::FinanceTransaction, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::create_finance_transaction(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_finance_transaction(db: State<Database>, id: i64) -> Result<finance_commands::FinanceTransaction, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::get_finance_transaction(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_transactions(db: State<Database>, params: finance_commands::FinanceTransactionListParams) -> Result<finance_commands::FinanceTransactionListResponse, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_transactions(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_finance_transaction(db: State<Database>, id: i64, input: finance_commands::FinanceTransactionUpdateInput) -> Result<finance_commands::FinanceTransaction, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::update_finance_transaction(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_finance_transaction(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::delete_finance_transaction(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_finance_account(db: State<Database>, input: finance_commands::FinanceAccountCreateInput) -> Result<finance_commands::FinanceAccount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::create_finance_account(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_finance_account(db: State<Database>, id: i64) -> Result<finance_commands::FinanceAccount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::get_finance_account(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_accounts(db: State<Database>) -> Result<Vec<finance_commands::FinanceAccount>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_accounts(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_finance_account(db: State<Database>, id: i64, input: finance_commands::FinanceAccountUpdateInput) -> Result<finance_commands::FinanceAccount, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::update_finance_account(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_finance_account(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::delete_finance_account(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_finance_category(db: State<Database>, input: finance_commands::FinanceCategoryCreateInput) -> Result<finance_commands::FinanceCategory, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::create_finance_category(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_finance_category(db: State<Database>, id: i64) -> Result<finance_commands::FinanceCategory, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::get_finance_category(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_categories(db: State<Database>, category_type: Option<String>) -> Result<Vec<finance_commands::FinanceCategory>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_categories(&conn, category_type).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_finance_category(db: State<Database>, id: i64, input: finance_commands::FinanceCategoryUpdateInput) -> Result<finance_commands::FinanceCategory, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::update_finance_category(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_finance_category(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::delete_finance_category(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_finance_invoice(db: State<Database>, input: finance_commands::FinanceInvoiceCreateInput) -> Result<finance_commands::FinanceInvoice, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::create_finance_invoice(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_finance_invoice(db: State<Database>, id: i64) -> Result<finance_commands::FinanceInvoice, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::get_finance_invoice(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_invoices(db: State<Database>, params: finance_commands::FinanceInvoiceListParams) -> Result<finance_commands::FinanceInvoiceListResponse, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_invoices(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_finance_invoice(db: State<Database>, id: i64, input: finance_commands::FinanceInvoiceUpdateInput) -> Result<finance_commands::FinanceInvoice, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::update_finance_invoice(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_finance_invoice(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::delete_finance_invoice(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn create_finance_invoice_item(db: State<Database>, input: finance_commands::FinanceInvoiceItemCreateInput) -> Result<finance_commands::FinanceInvoiceItem, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::create_finance_invoice_item(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_invoice_items(db: State<Database>, invoice_id: i64) -> Result<Vec<finance_commands::FinanceInvoiceItem>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_invoice_items(&conn, invoice_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_finance_invoice_item(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::delete_finance_invoice_item(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_receivables_payables(db: State<Database>, params: finance_commands::FinanceReceivablePayableListParams) -> Result<Vec<finance_commands::FinanceReceivablePayable>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_receivables_payables(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_finance_report_configs(db: State<Database>) -> Result<Vec<finance_commands::FinanceReportConfig>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::list_finance_report_configs(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_finance_statistics(db: State<Database>, start_date: String, end_date: String) -> Result<finance_commands::FinanceStatistics, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    finance_commands::get_finance_statistics(&conn, &start_date, &end_date).map_err(|e| e.to_string())
 }
 
 // ==================== 客户管理模块命令 (独立模块) ====================
@@ -904,12 +1199,74 @@ pub fn run() {
             delete_customer_follow_up,
             // 客户管理 - 统计
             get_customer_statistics,
-            // 供应商管理
+            // 供应商管理 - CRUD
             create_supplier,
             get_supplier,
             list_suppliers,
             update_supplier,
             delete_supplier,
+            // 供应商管理 - 联系人
+            create_supplier_contact,
+            get_supplier_contact,
+            list_supplier_contacts,
+            update_supplier_contact,
+            delete_supplier_contact,
+            // 供应商管理 - 联系记录
+            create_supplier_interaction,
+            list_supplier_interactions,
+            // 供应商管理 - 分级
+            list_supplier_levels,
+            // 供应商管理 - 标签
+            list_supplier_tags,
+            create_supplier_tag,
+            // 供应商管理 - 评估
+            create_supplier_evaluation,
+            get_supplier_evaluation,
+            list_supplier_evaluations,
+            update_supplier_evaluation,
+            delete_supplier_evaluation,
+            // 供应商管理 - 产品
+            create_supplier_product,
+            get_supplier_product,
+            list_supplier_products,
+            update_supplier_product,
+            delete_supplier_product,
+            // 供应商管理 - 统计
+            get_supplier_statistics,
+            // 财务管理 - 收支记录
+            create_finance_transaction,
+            get_finance_transaction,
+            list_finance_transactions,
+            update_finance_transaction,
+            delete_finance_transaction,
+            // 财务管理 - 会计科目
+            create_finance_account,
+            get_finance_account,
+            list_finance_accounts,
+            update_finance_account,
+            delete_finance_account,
+            // 财务管理 - 收支分类
+            create_finance_category,
+            get_finance_category,
+            list_finance_categories,
+            update_finance_category,
+            delete_finance_category,
+            // 财务管理 - 发票管理
+            create_finance_invoice,
+            get_finance_invoice,
+            list_finance_invoices,
+            update_finance_invoice,
+            delete_finance_invoice,
+            // 财务管理 - 发票明细
+            create_finance_invoice_item,
+            list_finance_invoice_items,
+            delete_finance_invoice_item,
+            // 财务管理 - 应收应付
+            list_finance_receivables_payables,
+            // 财务管理 - 报表配置
+            list_finance_report_configs,
+            // 财务管理 - 统计
+            get_finance_statistics,
             // 销售订单
             create_sales_order,
             get_sales_order,
