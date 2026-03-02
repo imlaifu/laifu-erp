@@ -56,10 +56,20 @@
   - `src/stores/inventory.ts`
   - `src/features/inventory/InventoryPage.tsx`
 
-### [ ] 4. 订单管理 (Order Management)
+### [x] 4. 订单管理 (Order Management) ✅
 - 销售订单
 - 采购订单
 - 订单状态跟踪
+- 客户管理
+- 供应商管理
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/004_orders.sql`
+  - `src-tauri/src/order_commands.rs`
+  - `src/types/order.ts`
+  - `src/services/orderService.ts`
+  - `src/stores/order.ts`
+  - `src/features/order/OrderPage.tsx`
 
 ### [ ] 5. 客户管理 (Customer Management)
 - 客户信息
@@ -77,6 +87,6 @@
 - 发票管理
 
 ---
-**当前进度**: 3/7 模块完成
-**最新完成**: 库存管理模块 (2026-03-03)
-**下一步**: 订单管理模块
+**当前进度**: 4/7 模块完成
+**最新完成**: 订单管理模块 (2026-03-03)
+**下一步**: 客户管理模块

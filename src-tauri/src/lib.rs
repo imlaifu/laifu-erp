@@ -3,6 +3,7 @@
 mod user_commands;
 mod product_commands;
 mod inventory_commands;
+mod order_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -446,6 +447,156 @@ fn get_low_stock_products(db: State<Database>, warehouse_id: Option<i64>) -> Res
     inventory_commands::get_low_stock_products(&conn, warehouse_id).map_err(|e| e.to_string())
 }
 
+// ==================== 订单管理相关命令 ====================
+
+// 客户
+#[tauri::command]
+fn create_customer(db: State<Database>, input: order_commands::CustomerCreateInput) -> Result<order_commands::Customer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::create_customer(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_customer(db: State<Database>, id: i64) -> Result<order_commands::Customer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_customer(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_customers(db: State<Database>, limit: i64, offset: i64, status: Option<String>, level: Option<String>, search: Option<String>) -> Result<Vec<order_commands::Customer>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::list_customers(&conn, limit, offset, status, level, search).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_customer(db: State<Database>, id: i64, input: order_commands::CustomerUpdateInput) -> Result<order_commands::Customer, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::update_customer(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_customer(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::delete_customer(&conn, id).map_err(|e| e.to_string())
+}
+
+// 供应商
+#[tauri::command]
+fn create_supplier(db: State<Database>, input: order_commands::SupplierCreateInput) -> Result<order_commands::Supplier, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::create_supplier(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_supplier(db: State<Database>, id: i64) -> Result<order_commands::Supplier, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_supplier(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_suppliers(db: State<Database>, limit: i64, offset: i64, status: Option<String>, search: Option<String>) -> Result<Vec<order_commands::Supplier>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::list_suppliers(&conn, limit, offset, status, search).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_supplier(db: State<Database>, id: i64, input: order_commands::SupplierUpdateInput) -> Result<order_commands::Supplier, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::update_supplier(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_supplier(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::delete_supplier(&conn, id).map_err(|e| e.to_string())
+}
+
+// 销售订单
+#[tauri::command]
+fn create_sales_order(db: State<Database>, input: order_commands::SalesOrderCreateInput) -> Result<order_commands::SalesOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::create_sales_order(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_sales_order(db: State<Database>, id: i64) -> Result<order_commands::SalesOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_sales_order(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_sales_orders(db: State<Database>, params: order_commands::SalesOrderListParams) -> Result<Vec<order_commands::SalesOrder>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::list_sales_orders(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_sales_order(db: State<Database>, id: i64, input: order_commands::SalesOrderUpdateInput) -> Result<order_commands::SalesOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::update_sales_order(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_sales_order(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::delete_sales_order(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_sales_order_items(db: State<Database>, orderId: i64) -> Result<Vec<order_commands::SalesOrderItem>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_sales_order_items(&conn, orderId).map_err(|e| e.to_string())
+}
+
+// 采购订单
+#[tauri::command]
+fn create_purchase_order(db: State<Database>, input: order_commands::PurchaseOrderCreateInput) -> Result<order_commands::PurchaseOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::create_purchase_order(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_purchase_order(db: State<Database>, id: i64) -> Result<order_commands::PurchaseOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_purchase_order(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_purchase_orders(db: State<Database>, params: order_commands::PurchaseOrderListParams) -> Result<Vec<order_commands::PurchaseOrder>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::list_purchase_orders(&conn, params).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_purchase_order(db: State<Database>, id: i64, input: order_commands::PurchaseOrderUpdateInput) -> Result<order_commands::PurchaseOrder, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::update_purchase_order(&conn, id, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_purchase_order(db: State<Database>, id: i64) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::delete_purchase_order(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_purchase_order_items(db: State<Database>, orderId: i64) -> Result<Vec<order_commands::PurchaseOrderItem>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::get_purchase_order_items(&conn, orderId).map_err(|e| e.to_string())
+}
+
+// 订单状态历史
+#[tauri::command]
+fn add_order_status_history(db: State<Database>, input: order_commands::OrderStatusChangeInput) -> Result<order_commands::OrderStatusHistory, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::add_order_status_history(&conn, input).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn list_order_status_history(db: State<Database>, orderType: String, orderId: i64) -> Result<Vec<order_commands::OrderStatusHistory>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    order_commands::list_order_status_history(&conn, &orderType, orderId).map_err(|e| e.to_string())
+}
 // ==================== 应用初始化 ====================
 
 fn init_db(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -464,6 +615,7 @@ fn init_db(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         include_str!("../migrations/001_users.sql"),
         include_str!("../migrations/002_products.sql"),
         include_str!("../migrations/003_inventory.sql"),
+        include_str!("../migrations/004_orders.sql"),
     ];
     
     for migration in migrations {
@@ -552,6 +704,35 @@ pub fn run() {
             // 库存管理模块 - 统计
             get_inventory_summary,
             get_low_stock_products,
+            // 客户管理
+            create_customer,
+            get_customer,
+            list_customers,
+            update_customer,
+            delete_customer,
+            // 供应商管理
+            create_supplier,
+            get_supplier,
+            list_suppliers,
+            update_supplier,
+            delete_supplier,
+            // 销售订单
+            create_sales_order,
+            get_sales_order,
+            list_sales_orders,
+            update_sales_order,
+            delete_sales_order,
+            get_sales_order_items,
+            // 采购订单
+            create_purchase_order,
+            get_purchase_order,
+            list_purchase_orders,
+            update_purchase_order,
+            delete_purchase_order,
+            get_purchase_order_items,
+            // 订单状态历史
+            add_order_status_history,
+            list_order_status_history,
         ])
         .setup(|app| {
             init_db(app.handle())?;
