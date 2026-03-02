@@ -7,6 +7,7 @@ mod order_commands;
 mod customer_commands;
 mod supplier_commands;
 mod finance_commands;
+mod reports_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1284,6 +1285,35 @@ pub fn run() {
             // 订单状态历史
             add_order_status_history,
             list_order_status_history,
+            // 报表管理 - 报表定义
+            reports_commands::get_report_definitions,
+            reports_commands::get_report_definition,
+            reports_commands::create_report_definition,
+            reports_commands::update_report_definition,
+            reports_commands::delete_report_definition,
+            // 报表管理 - 报表执行
+            reports_commands::execute_report,
+            reports_commands::execute_dynamic_query,
+            reports_commands::get_report_executions,
+            // 报表管理 - Dashboard widgets
+            reports_commands::get_dashboard_widgets,
+            reports_commands::create_dashboard_widget,
+            reports_commands::update_dashboard_widget,
+            reports_commands::delete_dashboard_widget,
+            reports_commands::get_dashboard_data,
+            // 报表管理 - 保存报表
+            reports_commands::get_saved_reports,
+            reports_commands::create_saved_report,
+            reports_commands::update_saved_report,
+            reports_commands::delete_saved_report,
+            reports_commands::execute_saved_report,
+            // 报表管理 - 导出历史
+            reports_commands::create_export_record,
+            reports_commands::update_export_record,
+            reports_commands::get_export_history,
+            // 报表管理 - 统计快照
+            reports_commands::upsert_stats_snapshot,
+            reports_commands::get_stats_snapshot,
         ])
         .setup(|app| {
             init_db(app.handle())?;
