@@ -1,0 +1,60 @@
+# ERP 模块开发任务列表
+
+## 开发原则
+每次开发按顺序执行 6 步：
+1. 📦 数据库 Schema - `src-tauri/migrations/XXX_module.sql`
+2. 🦀 Rust Commands - `src-tauri/src/module_commands.rs`
+3. 📝 TypeScript 类型 - `src/types/module.ts`
+4. 📡 API 服务 - `src/services/moduleService.ts`
+5. 🗃️ Zustand Store - `src/stores/module.ts`
+6. 🎨 UI 组件 - `src/features/module/ModulePage.tsx`
+
+## 待开发模块
+
+### [x] 1. 用户管理 (User Management) ✅
+- 用户 CRUD
+- 角色权限
+- 登录认证
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/001_users.sql`
+  - `src-tauri/src/user_commands.rs`
+  - `src/types/user.ts`
+  - `src/services/userService.ts`
+  - `src/stores/user.ts`
+  - `src/features/user/UserPage.tsx`
+
+### [ ] 2. 产品管理 (Product Management)
+- 产品信息
+- 产品分类
+- 价格管理
+
+### [ ] 3. 库存管理 (Inventory Management)
+- 库存数量
+- 入库出库
+- 库存预警
+
+### [ ] 4. 订单管理 (Order Management)
+- 销售订单
+- 采购订单
+- 订单状态跟踪
+
+### [ ] 5. 客户管理 (Customer Management)
+- 客户信息
+- 联系记录
+- 客户分级
+
+### [ ] 6. 供应商管理 (Supplier Management)
+- 供应商信息
+- 采购记录
+- 供应商评估
+
+### [ ] 7. 财务管理 (Finance Management)
+- 收支记录
+- 财务报表
+- 发票管理
+
+---
+**当前进度**: 1/7 模块完成
+**最新完成**: 用户管理模块 (2026-03-03)
+**下一步**: 产品管理模块
