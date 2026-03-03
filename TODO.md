@@ -177,7 +177,7 @@
   - `src/stores/project.ts`
   - `src/features/project/ProjectPage.tsx`
 
-### [ ] 11. 采购管理 (Procurement Management) 🔄
+### [x] 11. 采购管理 (Procurement Management) ✅
 - 采购申请
 - 采购订单
 - 供应商比价
@@ -185,6 +185,7 @@
 - 采购合同
 - 采购统计
 - **优先级**: 中
+- **完成时间**: 2026-03-03
 - **文件**:
   - `src-tauri/migrations/011_procurement.sql`
   - `src-tauri/src/procurement_commands.rs`
@@ -226,6 +227,6 @@
   - `src/features/settings/SettingsPage.tsx`
 
 ---
-**第二阶段进度**: 2/5 模块完成
-**最新完成**: 项目管理模块 (2026-03-03)
-**当前开发**: 采购管理模块
+**第二阶段进度**: 3/5 模块完成
+**最新完成**: 采购管理模块 (2026-03-03)
+**当前开发**: 销售管理模块
