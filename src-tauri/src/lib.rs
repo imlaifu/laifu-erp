@@ -12,6 +12,7 @@ mod hr_commands;
 mod project_commands;
 mod procurement_commands;
 mod sales_commands;
+mod settings_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1472,6 +1473,66 @@ pub fn run() {
             sales_commands::list_sales_activities,
             sales_commands::complete_sales_activity,
             sales_commands::delete_sales_activity,
+            // 系统设置 - 系统参数
+            settings_commands::create_system_setting,
+            settings_commands::get_system_setting,
+            settings_commands::get_all_system_settings,
+            settings_commands::get_system_settings_by_category,
+            settings_commands::update_system_setting,
+            settings_commands::delete_system_setting,
+            settings_commands::get_setting_value,
+            settings_commands::update_setting_value,
+            // 系统设置 - 数据字典
+            settings_commands::create_data_dictionary,
+            settings_commands::get_data_dictionary,
+            settings_commands::get_data_dictionary_by_code,
+            settings_commands::get_all_data_dictionaries,
+            settings_commands::update_data_dictionary,
+            settings_commands::delete_data_dictionary,
+            // 系统设置 - 操作日志
+            settings_commands::create_operation_log,
+            settings_commands::get_operation_log,
+            settings_commands::query_operation_logs,
+            // 系统设置 - 审计日志
+            settings_commands::create_audit_log,
+            settings_commands::get_audit_log,
+            settings_commands::query_audit_logs,
+            // 系统设置 - 备份配置
+            settings_commands::create_backup_config,
+            settings_commands::get_backup_config,
+            settings_commands::get_all_backup_configs,
+            settings_commands::update_backup_config,
+            settings_commands::delete_backup_config,
+            // 系统设置 - 权限配置
+            settings_commands::create_permission_config,
+            settings_commands::get_permission_config,
+            settings_commands::get_permissions_by_role,
+            settings_commands::update_permission_config,
+            settings_commands::delete_permission_config,
+            // 系统设置 - 通知配置
+            settings_commands::create_notification_config,
+            settings_commands::get_notification_config,
+            settings_commands::get_all_notification_configs,
+            settings_commands::update_notification_config,
+            settings_commands::delete_notification_config,
+            // 系统设置 - 集成配置
+            settings_commands::create_integration_config,
+            settings_commands::get_integration_config,
+            settings_commands::get_all_integration_configs,
+            settings_commands::update_integration_config,
+            settings_commands::delete_integration_config,
+            // 系统设置 - 自定义字段
+            settings_commands::create_custom_field,
+            settings_commands::get_custom_field,
+            settings_commands::get_custom_fields_by_entity,
+            settings_commands::update_custom_field,
+            settings_commands::delete_custom_field,
+            // 系统设置 - 工作流配置
+            settings_commands::create_workflow_config,
+            settings_commands::get_workflow_config,
+            settings_commands::get_workflows_by_entity,
+            settings_commands::update_workflow_config,
+            settings_commands::delete_workflow_config,
         ])
         .setup(|app| {
             init_db(app.handle())?;
