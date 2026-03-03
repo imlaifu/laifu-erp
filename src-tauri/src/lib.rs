@@ -10,6 +10,7 @@ mod finance_commands;
 mod reports_commands;
 mod hr_commands;
 mod project_commands;
+mod procurement_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1390,6 +1391,39 @@ pub fn run() {
             project_commands::get_project_member_by_id,
             project_commands::get_members_by_project,
             project_commands::remove_project_member,
+            // 采购管理 - 采购申请
+            procurement_commands::create_procurement_request,
+            procurement_commands::get_procurement_request,
+            procurement_commands::list_procurement_requests,
+            procurement_commands::get_procurement_request_items,
+            procurement_commands::approve_procurement_request,
+            procurement_commands::reject_procurement_request,
+            // 采购管理 - 采购订单
+            procurement_commands::create_purchase_order,
+            procurement_commands::get_purchase_order,
+            procurement_commands::list_purchase_orders,
+            procurement_commands::get_purchase_order_items,
+            procurement_commands::update_purchase_order_status,
+            procurement_commands::delete_purchase_order,
+            // 采购管理 - 采购合同
+            procurement_commands::create_purchase_contract,
+            procurement_commands::get_purchase_contract,
+            procurement_commands::list_purchase_contracts,
+            procurement_commands::update_purchase_contract_status,
+            // 采购管理 - 入库验收
+            procurement_commands::create_receiving_inspection,
+            procurement_commands::get_receiving_inspection,
+            procurement_commands::list_receiving_inspections,
+            procurement_commands::get_receiving_inspection_items,
+            procurement_commands::update_receiving_inspection_status,
+            // 采购管理 - 供应商比价
+            procurement_commands::create_supplier_comparison,
+            procurement_commands::get_supplier_comparison,
+            procurement_commands::list_supplier_comparisons,
+            procurement_commands::add_supplier_comparison_item,
+            procurement_commands::get_supplier_comparison_items,
+            procurement_commands::select_supplier_comparison_item,
+            procurement_commands::delete_supplier_comparison,
         ])
         .setup(|app| {
             init_db(app.handle())?;
