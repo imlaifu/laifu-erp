@@ -9,6 +9,7 @@ mod supplier_commands;
 mod finance_commands;
 mod reports_commands;
 mod hr_commands;
+mod project_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1346,6 +1347,49 @@ pub fn run() {
             hr_commands::create_training_record,
             // 人力资源管理 - 统计
             hr_commands::get_hr_statistics,
+            // 项目管理 - 项目 CRUD
+            project_commands::create_project,
+            project_commands::get_project_by_id,
+            project_commands::get_all_projects,
+            project_commands::update_project,
+            project_commands::delete_project,
+            project_commands::get_projects_by_status,
+            project_commands::get_project_statistics,
+            // 项目管理 - 里程碑
+            project_commands::create_milestone,
+            project_commands::get_milestone_by_id,
+            project_commands::get_milestones_by_project,
+            project_commands::update_milestone,
+            project_commands::delete_milestone,
+            // 项目管理 - 任务
+            project_commands::create_task,
+            project_commands::get_task_by_id,
+            project_commands::get_tasks_by_project,
+            project_commands::update_task_status,
+            project_commands::delete_task,
+            // 项目管理 - 工时记录
+            project_commands::create_time_entry,
+            project_commands::get_time_entry_by_id,
+            project_commands::get_time_entries_by_project,
+            project_commands::approve_time_entry,
+            // 项目管理 - 成本
+            project_commands::create_project_cost,
+            project_commands::get_project_cost_by_id,
+            project_commands::get_costs_by_project,
+            // 项目管理 - 文档
+            project_commands::create_project_document,
+            project_commands::get_project_document_by_id,
+            project_commands::get_documents_by_project,
+            // 项目管理 - 问题/风险
+            project_commands::create_project_issue,
+            project_commands::get_project_issue_by_id,
+            project_commands::get_issues_by_project,
+            project_commands::resolve_project_issue,
+            // 项目管理 - 成员
+            project_commands::add_project_member,
+            project_commands::get_project_member_by_id,
+            project_commands::get_members_by_project,
+            project_commands::remove_project_member,
         ])
         .setup(|app| {
             init_db(app.handle())?;
