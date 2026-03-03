@@ -4,24 +4,22 @@
 -- 销售机会表
 CREATE TABLE IF NOT EXISTS sales_opportunities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    customer_id INTEGER,
-    contact_person TEXT,
-    contact_phone TEXT,
-    contact_email TEXT,
-    source TEXT CHECK(source IN ('referral', 'website', 'cold_call', 'social_media', 'exhibition', 'other')),
-    stage TEXT DEFAULT 'lead' CHECK(stage IN ('lead', 'qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost')),
+    opportunity_no TEXT NOT NULL UNIQUE,
+    customer_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    source TEXT DEFAULT 'inbound' CHECK(source IN ('inbound', 'outbound', 'referral', 'marketing', 'website', 'social', 'other')),
+    stage TEXT DEFAULT 'prospecting' CHECK(stage IN ('prospecting', 'qualification', 'proposal', 'negotiation', 'closed_won', 'closed_lost')),
     priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'urgent')),
     estimated_amount REAL DEFAULT 0,
     actual_amount REAL DEFAULT 0,
-    win_probability INTEGER DEFAULT 0 CHECK(win_probability >= 0 AND win_probability <= 100),
-    expected_close_date DATETIME,
-    actual_close_date DATETIME,
-    lost_reason TEXT,
+    probability INTEGER DEFAULT 0 CHECK(probability >= 0 AND probability <= 100),
+    expected_close_date DATE,
+    actual_close_date DATE,
+    loss_reason TEXT,
     owner_id INTEGER,
-    description TEXT,
-    next_follow_up DATETIME,
-    status TEXT DEFAULT 'active' CHECK(status IN ('active', 'inactive', 'archived')),
+    status TEXT DEFAULT 'open' CHECK(status IN ('open', 'won', 'lost', 'abandoned')),
+    notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES customers(id),
@@ -32,12 +30,12 @@ CREATE TABLE IF NOT EXISTS sales_opportunities (
 CREATE TABLE IF NOT EXISTS opportunity_followups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     opportunity_id INTEGER NOT NULL,
-    followup_type TEXT CHECK(followup_type IN ('call', 'email', 'meeting', 'demo', 'proposal', 'other')),
+    followup_date DATE NOT NULL,
+    followup_type TEXT DEFAULT 'call' CHECK(followup_type IN ('call', 'email', 'meeting', 'demo', 'proposal', 'other')),
     subject TEXT,
-    content TEXT,
+    description TEXT,
     outcome TEXT,
-    followup_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    next_followup_date DATETIME,
+    next_followup_date DATE,
     created_by INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id) ON DELETE CASCADE,
@@ -47,32 +45,35 @@ CREATE TABLE IF NOT EXISTS opportunity_followups (
 -- 报价单表
 CREATE TABLE IF NOT EXISTS sales_quotations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    quotation_number TEXT NOT NULL UNIQUE,
+    quotation_no TEXT NOT NULL UNIQUE,
     opportunity_id INTEGER,
     customer_id INTEGER NOT NULL,
-    contact_person TEXT,
-    contact_phone TEXT,
-    contact_email TEXT,
-    valid_until DATETIME,
+    quotation_date DATE NOT NULL,
+    expiry_date DATE,
     status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'converted')),
+    currency TEXT DEFAULT 'CNY',
     subtotal REAL DEFAULT 0,
-    discount_rate REAL DEFAULT 0,
-    discount_amount REAL DEFAULT 0,
     tax_rate REAL DEFAULT 0,
     tax_amount REAL DEFAULT 0,
+    discount_amount REAL DEFAULT 0,
+    shipping_cost REAL DEFAULT 0,
     total_amount REAL DEFAULT 0,
+    payment_terms TEXT,
+    delivery_terms TEXT,
     notes TEXT,
-    terms_conditions TEXT,
+    attachment_urls TEXT, -- JSON 格式存储附件 URL 列表
     created_by INTEGER,
-    approved_by INTEGER,
-    approved_at DATETIME,
     sent_at DATETIME,
+    accepted_at DATETIME,
+    rejected_at DATETIME,
+    rejection_reason TEXT,
+    converted_order_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
     FOREIGN KEY (created_by) REFERENCES users(id),
-    FOREIGN KEY (approved_by) REFERENCES users(id)
+    FOREIGN KEY (converted_order_id) REFERENCES sales_orders(id)
 );
 
 -- 报价单明细表
@@ -83,12 +84,13 @@ CREATE TABLE IF NOT EXISTS quotation_items (
     product_name TEXT NOT NULL,
     product_sku TEXT,
     description TEXT,
-    quantity REAL DEFAULT 1,
+    quantity INTEGER NOT NULL,
     unit TEXT DEFAULT '件',
-    unit_price REAL DEFAULT 0,
+    unit_price REAL NOT NULL,
     discount_rate REAL DEFAULT 0,
-    amount REAL DEFAULT 0,
-    sort_order INTEGER DEFAULT 0,
+    tax_rate REAL DEFAULT 0,
+    total_amount REAL GENERATED ALWAYS AS (quantity * unit_price * (1 - discount_rate / 100)) VIRTUAL,
+    notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (quotation_id) REFERENCES sales_quotations(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
@@ -97,193 +99,226 @@ CREATE TABLE IF NOT EXISTS quotation_items (
 -- 销售合同表
 CREATE TABLE IF NOT EXISTS sales_contracts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    contract_number TEXT NOT NULL UNIQUE,
-    contract_name TEXT NOT NULL,
-    opportunity_id INTEGER,
+    contract_no TEXT NOT NULL UNIQUE,
     quotation_id INTEGER,
+    opportunity_id INTEGER,
     customer_id INTEGER NOT NULL,
-    contract_type TEXT CHECK(contract_type IN ('sales', 'framework', 'distribution', 'agency')),
-    start_date DATETIME,
-    end_date DATETIME,
-    auto_renew BOOLEAN DEFAULT 0,
+    contract_type TEXT DEFAULT 'standard' CHECK(contract_type IN ('standard', 'framework', 'annual', 'project')),
+    title TEXT NOT NULL,
+    start_date DATE,
+    end_date DATE,
     total_amount REAL DEFAULT 0,
-    paid_amount REAL DEFAULT 0,
-    remaining_amount REAL GENERATED ALWAYS AS (total_amount - paid_amount) VIRTUAL,
-    currency TEXT DEFAULT 'CNY',
+    status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'pending_review', 'active', 'completed', 'expired', 'terminated')),
     payment_terms TEXT,
     delivery_terms TEXT,
-    status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'pending_approval', 'approved', 'active', 'completed', 'terminated', 'expired')),
-    signed_date DATETIME,
-    customer_signed_date DATETIME,
-    internal_signed_by INTEGER,
-    notes TEXT,
+    terms TEXT, -- 合同条款
     attachment_urls TEXT, -- JSON 格式存储附件 URL 列表
+    signed_by_customer TEXT,
+    signed_by_company TEXT,
+    signed_at DATETIME,
     created_by INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id),
     FOREIGN KEY (quotation_id) REFERENCES sales_quotations(id),
+    FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
-    FOREIGN KEY (internal_signed_by) REFERENCES users(id)
+    FOREIGN KEY (created_by) REFERENCES users(id)
 );
 
--- 销售合同明细表
-CREATE TABLE IF NOT EXISTS contract_items (
+-- 销售订单表
+CREATE TABLE IF NOT EXISTS sales_orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    contract_id INTEGER NOT NULL,
+    order_no TEXT NOT NULL UNIQUE,
+    quotation_id INTEGER,
+    contract_id INTEGER,
+    opportunity_id INTEGER,
+    customer_id INTEGER NOT NULL,
+    order_date DATE NOT NULL,
+    expected_delivery_date DATE,
+    actual_delivery_date DATE,
+    status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'confirmed', 'processing', 'partially_shipped', 'shipped', 'delivered', 'completed', 'cancelled')),
+    payment_status TEXT DEFAULT 'unpaid' CHECK(payment_status IN ('unpaid', 'partially_paid', 'paid', 'refunded')),
+    currency TEXT DEFAULT 'CNY',
+    subtotal REAL DEFAULT 0,
+    tax_rate REAL DEFAULT 0,
+    tax_amount REAL DEFAULT 0,
+    discount_amount REAL DEFAULT 0,
+    shipping_cost REAL DEFAULT 0,
+    total_amount REAL DEFAULT 0,
+    paid_amount REAL DEFAULT 0,
+    payment_terms TEXT,
+    delivery_address TEXT,
+    shipping_method TEXT,
+    tracking_number TEXT,
+    notes TEXT,
+    attachment_urls TEXT, -- JSON 格式存储附件 URL 列表
+    created_by INTEGER,
+    confirmed_at DATETIME,
+    completed_at DATETIME,
+    cancelled_at DATETIME,
+    cancellation_reason TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (quotation_id) REFERENCES sales_quotations(id),
+    FOREIGN KEY (contract_id) REFERENCES sales_contracts(id),
+    FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id),
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+-- 销售订单明细表
+CREATE TABLE IF NOT EXISTS sales_order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
     product_id INTEGER,
     product_name TEXT NOT NULL,
     product_sku TEXT,
     description TEXT,
-    quantity REAL DEFAULT 1,
+    quantity INTEGER NOT NULL,
+    shipped_quantity INTEGER DEFAULT 0,
     unit TEXT DEFAULT '件',
-    unit_price REAL DEFAULT 0,
+    unit_price REAL NOT NULL,
     discount_rate REAL DEFAULT 0,
-    amount REAL DEFAULT 0,
-    delivery_date DATETIME,
-    sort_order INTEGER DEFAULT 0,
+    tax_rate REAL DEFAULT 0,
+    total_amount REAL GENERATED ALWAYS AS (quantity * unit_price * (1 - discount_rate / 100)) VIRTUAL,
+    notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (contract_id) REFERENCES sales_contracts(id) ON DELETE CASCADE,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES sales_orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 -- 销售预测表
 CREATE TABLE IF NOT EXISTS sales_forecasts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    period_type TEXT CHECK(period_type IN ('weekly', 'monthly', 'quarterly', 'yearly')),
-    period_start DATETIME NOT NULL,
-    period_end DATETIME NOT NULL,
+    forecast_no TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    forecast_type TEXT DEFAULT 'monthly' CHECK(forecast_type IN ('weekly', 'monthly', 'quarterly', 'yearly')),
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
     product_id INTEGER,
-    category_id INTEGER,
-    forecast_quantity REAL DEFAULT 0,
-    forecast_amount REAL DEFAULT 0,
-    actual_quantity REAL DEFAULT 0,
+    customer_id INTEGER,
+    sales_rep_id INTEGER,
+    forecasted_amount REAL DEFAULT 0,
     actual_amount REAL DEFAULT 0,
-    accuracy_rate REAL DEFAULT 0,
-    method TEXT CHECK(method IN ('historical_avg', 'trend_analysis', 'seasonal', 'manual', 'ai_predicted')),
-    confidence_level REAL DEFAULT 0,
+    accuracy REAL DEFAULT 0, -- 预测准确率
     notes TEXT,
     created_by INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id),
-    FOREIGN KEY (category_id) REFERENCES product_categories(id),
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (sales_rep_id) REFERENCES users(id),
     FOREIGN KEY (created_by) REFERENCES users(id)
 );
 
--- 销售佣金表
-CREATE TABLE IF NOT EXISTS sales_commissions (
+-- 佣金规则表
+CREATE TABLE IF NOT EXISTS commission_rules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sales_person_id INTEGER NOT NULL,
-    opportunity_id INTEGER,
-    contract_id INTEGER,
-    order_id INTEGER,
-    commission_type TEXT CHECK(commission_type IN ('percentage', 'fixed', 'tiered', 'bonus')),
-    commission_rate REAL DEFAULT 0,
-    base_amount REAL DEFAULT 0,
-    commission_amount REAL DEFAULT 0,
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'paid', 'cancelled')),
-    calculation_date DATETIME,
-    payment_date DATETIME,
-    notes TEXT,
-    approved_by INTEGER,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sales_person_id) REFERENCES users(id),
-    FOREIGN KEY (opportunity_id) REFERENCES sales_opportunities(id),
-    FOREIGN KEY (contract_id) REFERENCES sales_contracts(id),
-    FOREIGN KEY (order_id) REFERENCES orders(id),
-    FOREIGN KEY (approved_by) REFERENCES users(id)
-);
-
--- 销售业绩表
-CREATE TABLE IF NOT EXISTS sales_performance (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sales_person_id INTEGER NOT NULL,
-    period_type TEXT CHECK(period_type IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
-    period_start DATETIME NOT NULL,
-    period_end DATETIME NOT NULL,
-    target_amount REAL DEFAULT 0,
-    actual_amount REAL DEFAULT 0,
-    achievement_rate REAL DEFAULT 0,
-    opportunities_count INTEGER DEFAULT 0,
-    won_opportunities_count INTEGER DEFAULT 0,
-    quotations_count INTEGER DEFAULT 0,
-    contracts_count INTEGER DEFAULT 0,
-    orders_count INTEGER DEFAULT 0,
-    total_commission REAL DEFAULT 0,
-    ranking INTEGER,
-    notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sales_person_id) REFERENCES users(id),
-    UNIQUE (sales_person_id, period_type, period_start, period_end)
-);
-
--- 销售活动日志表
-CREATE TABLE IF NOT EXISTS sales_activities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    activity_type TEXT CHECK(activity_type IN ('call', 'email', 'meeting', 'demo', 'proposal', 'contract', 'followup', 'other')),
-    subject TEXT NOT NULL,
-    description TEXT,
-    related_type TEXT CHECK(related_type IN ('opportunity', 'quotation', 'contract', 'customer', 'order')),
-    related_id INTEGER,
-    participant_ids TEXT, -- JSON 格式存储参与者 ID 列表
-    scheduled_time DATETIME,
-    actual_time DATETIME,
-    duration_minutes INTEGER,
-    location TEXT,
-    outcome TEXT,
-    status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'completed', 'cancelled', 'rescheduled')),
+    rule_name TEXT NOT NULL,
+    rule_type TEXT DEFAULT 'percentage' CHECK(rule_type IN ('percentage', 'fixed', 'tiered')),
+    applicable_to TEXT DEFAULT 'all' CHECK(applicable_to IN ('all', 'product', 'category', 'customer_type')),
+    applicable_id INTEGER, -- product_id, category_id, or customer_type
+    min_amount REAL DEFAULT 0,
+    max_amount REAL,
+    commission_rate REAL DEFAULT 0, -- 百分比
+    fixed_amount REAL DEFAULT 0,
+    is_active INTEGER DEFAULT 1,
+    effective_from DATE,
+    effective_to DATE,
     created_by INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id)
 );
 
+-- 佣金记录表
+CREATE TABLE IF NOT EXISTS commission_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_no TEXT NOT NULL UNIQUE,
+    sales_rep_id INTEGER NOT NULL,
+    order_id INTEGER,
+    contract_id INTEGER,
+    commission_rule_id INTEGER,
+    calculation_base REAL DEFAULT 0, -- 计算基数（订单金额等）
+    commission_rate REAL DEFAULT 0,
+    commission_amount REAL DEFAULT 0,
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'paid', 'cancelled')),
+    payment_date DATE,
+    notes TEXT,
+    calculated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    approved_by INTEGER,
+    approved_at DATETIME,
+    paid_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sales_rep_id) REFERENCES users(id),
+    FOREIGN KEY (order_id) REFERENCES sales_orders(id),
+    FOREIGN KEY (contract_id) REFERENCES sales_contracts(id),
+    FOREIGN KEY (commission_rule_id) REFERENCES commission_rules(id),
+    FOREIGN KEY (approved_by) REFERENCES users(id)
+);
+
+-- 销售业绩统计表 (视图)
+CREATE VIEW IF NOT EXISTS sales_performance_stats AS
+SELECT 
+    u.id as sales_rep_id,
+    u.name as sales_rep_name,
+    strftime('%Y-%m', so.created_at) as month,
+    COUNT(DISTINCT so.id) as order_count,
+    SUM(so.total_amount) as total_sales,
+    SUM(so.paid_amount) as collected_amount,
+    COUNT(DISTINCT CASE WHEN so.status = 'completed' THEN so.id END) as completed_orders,
+    COUNT(DISTINCT opp.id) as opportunities,
+    COUNT(DISTINCT CASE WHEN opp.status = 'won' THEN opp.id END) as won_opportunities
+FROM users u
+LEFT JOIN sales_orders so ON u.id = so.created_by
+LEFT JOIN sales_opportunities opp ON u.id = opp.owner_id AND strftime('%Y-%m', opp.created_at) = strftime('%Y-%m', so.created_at)
+WHERE u.id IN (SELECT id FROM users WHERE role IN ('sales', 'admin'))
+GROUP BY u.id, strftime('%Y-%m', so.created_at);
+
+-- 销售漏斗统计表 (视图)
+CREATE VIEW IF NOT EXISTS sales_funnel_stats AS
+SELECT 
+    stage,
+    COUNT(*) as opportunity_count,
+    SUM(estimated_amount) as total_estimated_amount,
+    AVG(probability) as avg_probability
+FROM sales_opportunities
+WHERE status = 'open'
+GROUP BY stage;
+
 -- 索引
-CREATE INDEX IF NOT EXISTS idx_opportunities_customer ON sales_opportunities(customer_id);
-CREATE INDEX IF NOT EXISTS idx_opportunities_stage ON sales_opportunities(stage);
-CREATE INDEX IF NOT EXISTS idx_opportunities_owner ON sales_opportunities(owner_id);
-CREATE INDEX IF NOT EXISTS idx_opportunities_status ON sales_opportunities(status);
-CREATE INDEX IF NOT EXISTS idx_followups_opportunity ON opportunity_followups(opportunity_id);
-CREATE INDEX IF NOT EXISTS idx_quotations_customer ON sales_quotations(customer_id);
-CREATE INDEX IF NOT EXISTS idx_quotations_status ON sales_quotations(status);
+CREATE INDEX IF NOT EXISTS idx_sales_opportunities_customer ON sales_opportunities(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_opportunities_stage ON sales_opportunities(stage);
+CREATE INDEX IF NOT EXISTS idx_sales_opportunities_status ON sales_opportunities(status);
+CREATE INDEX IF NOT EXISTS idx_sales_opportunities_owner ON sales_opportunities(owner_id);
+CREATE INDEX IF NOT EXISTS idx_opportunity_followups_opportunity ON opportunity_followups(opportunity_id);
+CREATE INDEX IF NOT EXISTS idx_sales_quotations_customer ON sales_quotations(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_quotations_status ON sales_quotations(status);
+CREATE INDEX IF NOT EXISTS idx_sales_quotations_opportunity ON sales_quotations(opportunity_id);
 CREATE INDEX IF NOT EXISTS idx_quotation_items_quotation ON quotation_items(quotation_id);
-CREATE INDEX IF NOT EXISTS idx_contracts_customer ON sales_contracts(customer_id);
-CREATE INDEX IF NOT EXISTS idx_contracts_status ON sales_contracts(status);
-CREATE INDEX IF NOT EXISTS idx_contract_items_contract ON contract_items(contract_id);
-CREATE INDEX IF NOT EXISTS idx_forecasts_period ON sales_forecasts(period_start, period_end);
-CREATE INDEX IF NOT EXISTS idx_forecasts_product ON sales_forecasts(product_id);
-CREATE INDEX IF NOT EXISTS idx_commissions_sales_person ON sales_commissions(sales_person_id);
-CREATE INDEX IF NOT EXISTS idx_commissions_status ON sales_commissions(status);
-CREATE INDEX IF NOT EXISTS idx_performance_sales_person ON sales_performance(sales_person_id);
-CREATE INDEX IF NOT EXISTS idx_performance_period ON sales_performance(period_start, period_end);
-CREATE INDEX IF NOT EXISTS idx_activities_type ON sales_activities(activity_type);
-CREATE INDEX IF NOT EXISTS idx_activities_status ON sales_activities(status);
+CREATE INDEX IF NOT EXISTS idx_sales_contracts_customer ON sales_contracts(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_contracts_status ON sales_contracts(status);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_customer ON sales_orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_status ON sales_orders(status);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_order_date ON sales_orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_sales_order_items_order ON sales_order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_sales_forecasts_period ON sales_forecasts(period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_commission_records_sales_rep ON commission_records(sales_rep_id);
+CREATE INDEX IF NOT EXISTS idx_commission_records_status ON commission_records(status);
 
--- 初始化数据
-INSERT INTO sales_opportunities (name, customer_id, contact_person, contact_phone, source, stage, priority, estimated_amount, win_probability, expected_close_date, owner_id, description) VALUES 
-('企业软件采购项目', 1, '张经理', '13800138001', 'referral', 'proposal', 'high', 500000.00, 70, '2026-03-30', 1, '大型企业 ERP 系统采购，包含多个模块'),
-('年度办公用品供应', 2, '李主任', '13800138002', 'website', 'negotiation', 'medium', 80000.00, 80, '2026-03-15', 2, '年度办公用品框架采购协议'),
-('新公司产品采购', 3, '王总', '13800138003', 'exhibition', 'qualified', 'high', 200000.00, 50, '2026-04-15', 1, '新成立公司的首批办公设备采购');
+-- 初始化数据 - 销售单号前缀
+INSERT OR IGNORE INTO settings (key, value, description) VALUES 
+('sales.opportunity_no_prefix', 'OPP', '销售机会编号前缀'),
+('sales.quotation_no_prefix', 'QT', '报价单编号前缀'),
+('sales.contract_no_prefix', 'SC', '销售合同编号前缀'),
+('sales.order_no_prefix', 'SO', '销售订单编号前缀'),
+('sales.forecast_no_prefix', 'SF', '销售预测编号前缀'),
+('sales.commission_no_prefix', 'CM', '佣金记录编号前缀');
 
-INSERT INTO sales_quotations (quotation_number, opportunity_id, customer_id, contact_person, contact_email, valid_until, status, subtotal, discount_rate, tax_rate, total_amount, notes, created_by) VALUES 
-('QT-2026-001', 1, 1, '张经理', 'zhang@example.com', '2026-03-20', 'sent', 500000.00, 5.0, 13.0, 552250.00, '包含 1 年免费维护', 1),
-('QT-2026-002', 2, 2, '李主任', 'li@example.com', '2026-03-10', 'accepted', 80000.00, 10.0, 13.0, 81360.00, '批量采购优惠', 2);
-
-INSERT INTO sales_contracts (contract_number, contract_name, opportunity_id, quotation_id, customer_id, contract_type, start_date, end_date, total_amount, currency, payment_terms, status, signed_date, created_by) VALUES 
-('CT-2026-001', '企业软件采购合同', 1, 1, 1, 'sales', '2026-03-01', '2027-03-01', 552250.00, 'CNY', '30% 预付款，60% 交付后，10% 质保金', 'active', '2026-03-01', 1);
-
-INSERT INTO sales_forecasts (period_type, period_start, period_end, forecast_quantity, forecast_amount, actual_quantity, actual_amount, method, confidence_level, created_by) VALUES 
-('monthly', '2026-03-01', '2026-03-31', 100, 800000.00, 450000.00, 450000.00, 'historical_avg', 0.85, 1),
-('monthly', '2026-04-01', '2026-04-30', 120, 950000.00, 0, 0, 'trend_analysis', 0.75, 1);
-
-INSERT INTO sales_commissions (sales_person_id, opportunity_id, commission_type, commission_rate, base_amount, commission_amount, status, calculation_date, notes) VALUES 
-(1, 1, 'percentage', 3.0, 552250.00, 16567.50, 'pending', '2026-03-01', '首单佣金'),
-(2, 2, 'percentage', 2.5, 81360.00, 2034.00, 'approved', '2026-03-01', '季度销售奖励');
-
-INSERT INTO sales_activities (activity_type, subject, related_type, related_id, scheduled_time, status, created_by, description) VALUES 
-('meeting', '项目需求讨论会', 'opportunity', 1, '2026-03-05 14:00:00', 'completed', 1, '与客户讨论 ERP 系统具体需求'),
-('call', '合同条款确认', 'contract', 1, '2026-03-02 10:00:00', 'completed', 1, '确认合同付款条款细节'),
-('email', '报价单发送', 'quotation', 1, '2026-03-01 09:00:00', 'completed', 1, '发送正式报价单给客户');
+-- 初始化佣金规则示例
+INSERT OR IGNORE INTO commission_rules (rule_name, rule_type, commission_rate, is_active, effective_from) VALUES 
+('标准销售佣金', 'percentage', 5.0, 1, date('now')),
+('大客户佣金', 'percentage', 8.0, 1, date('now')),
+('新产品推广佣金', 'percentage', 10.0, 1, date('now'));

@@ -11,6 +11,7 @@ mod reports_commands;
 mod hr_commands;
 mod project_commands;
 mod procurement_commands;
+mod sales_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1424,6 +1425,53 @@ pub fn run() {
             procurement_commands::get_supplier_comparison_items,
             procurement_commands::select_supplier_comparison_item,
             procurement_commands::delete_supplier_comparison,
+            // 销售管理 - 销售机会
+            sales_commands::create_sales_opportunity,
+            sales_commands::get_sales_opportunity,
+            sales_commands::list_sales_opportunities,
+            sales_commands::update_sales_opportunity,
+            sales_commands::delete_sales_opportunity,
+            sales_commands::update_opportunity_stage,
+            // 销售管理 - 跟进记录
+            sales_commands::create_opportunity_followup,
+            sales_commands::get_opportunity_followup,
+            sales_commands::list_opportunity_followups,
+            // 销售管理 - 报价单
+            sales_commands::create_sales_quotation,
+            sales_commands::get_sales_quotation,
+            sales_commands::list_sales_quotations,
+            sales_commands::get_quotation_items,
+            sales_commands::update_quotation_status,
+            sales_commands::delete_sales_quotation,
+            // 销售管理 - 销售合同
+            sales_commands::create_sales_contract,
+            sales_commands::get_sales_contract,
+            sales_commands::list_sales_contracts,
+            sales_commands::get_contract_items,
+            sales_commands::update_contract_status,
+            sales_commands::update_contract_payment,
+            sales_commands::delete_sales_contract,
+            // 销售管理 - 销售预测
+            sales_commands::create_sales_forecast,
+            sales_commands::get_sales_forecast,
+            sales_commands::list_sales_forecasts,
+            sales_commands::update_sales_forecast_actuals,
+            sales_commands::delete_sales_forecast,
+            // 销售管理 - 销售佣金
+            sales_commands::create_sales_commission,
+            sales_commands::get_sales_commission,
+            sales_commands::list_sales_commissions,
+            sales_commands::approve_sales_commission,
+            sales_commands::pay_sales_commission,
+            sales_commands::delete_sales_commission,
+            // 销售管理 - 销售业绩
+            sales_commands::list_sales_performance,
+            // 销售管理 - 销售活动
+            sales_commands::create_sales_activity,
+            sales_commands::get_sales_activity,
+            sales_commands::list_sales_activities,
+            sales_commands::complete_sales_activity,
+            sales_commands::delete_sales_activity,
         ])
         .setup(|app| {
             init_db(app.handle())?;
