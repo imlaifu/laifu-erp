@@ -8,6 +8,7 @@ mod customer_commands;
 mod supplier_commands;
 mod finance_commands;
 mod reports_commands;
+mod hr_commands;
 
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager, State};
@@ -1314,6 +1315,37 @@ pub fn run() {
             // 报表管理 - 统计快照
             reports_commands::upsert_stats_snapshot,
             reports_commands::get_stats_snapshot,
+            // 人力资源管理 - 员工
+            hr_commands::create_employee,
+            hr_commands::get_employee,
+            hr_commands::list_employees,
+            hr_commands::update_employee,
+            hr_commands::delete_employee,
+            // 人力资源管理 - 部门
+            hr_commands::get_departments,
+            hr_commands::create_department,
+            // 人力资源管理 - 考勤
+            hr_commands::get_attendance_records,
+            hr_commands::check_in,
+            hr_commands::check_out,
+            // 人力资源管理 - 请假
+            hr_commands::get_leave_types,
+            hr_commands::get_leave_applications,
+            hr_commands::create_leave_application,
+            hr_commands::approve_leave_application,
+            // 人力资源管理 - 薪资
+            hr_commands::get_salary_records,
+            hr_commands::create_salary_record,
+            hr_commands::pay_salary,
+            // 人力资源管理 - 绩效
+            hr_commands::get_performance_evaluations,
+            hr_commands::create_performance_evaluation,
+            hr_commands::submit_evaluation,
+            // 人力资源管理 - 培训
+            hr_commands::get_training_records,
+            hr_commands::create_training_record,
+            // 人力资源管理 - 统计
+            hr_commands::get_hr_statistics,
         ])
         .setup(|app| {
             init_db(app.handle())?;

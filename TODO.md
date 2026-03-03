@@ -137,4 +137,93 @@
 ---
 **当前进度**: 8/8 模块完成
 **最新完成**: 报表管理模块 (2026-03-03)
-**下一步**: 系统测试和优化阶段
+**下一阶段**: 第二阶段 - 扩展模块开发
+
+---
+
+# 第二阶段 - 扩展模块
+
+### [x] 9. 人力资源管理 (HR Management) ✅
+- 员工信息
+- 考勤管理
+- 薪资计算
+- 请假审批
+- 绩效管理
+- 培训记录
+- **优先级**: 高
+- **完成时间**: 2026-03-03
+- **文件**:
+  - `src-tauri/migrations/009_hr.sql`
+  - `src-tauri/src/hr_commands.rs`
+  - `src/types/hr.ts`
+  - `src/services/hrService.ts`
+  - `src/stores/hr.ts`
+  - `src/features/hr/HRPage.tsx`
+
+### [ ] 10. 项目管理 (Project Management) 🔄
+- 项目立项
+- 任务分配
+- 进度跟踪
+- 工时记录
+- 项目成本
+- 项目文档
+- **优先级**: 高
+- **文件**:
+  - `src-tauri/migrations/010_projects.sql`
+  - `src-tauri/src/project_commands.rs`
+  - `src/types/project.ts`
+  - `src/services/projectService.ts`
+  - `src/stores/project.ts`
+  - `src/features/project/ProjectPage.tsx`
+
+### [ ] 11. 采购管理 (Procurement Management) 🔄
+- 采购申请
+- 采购订单
+- 供应商比价
+- 入库验收
+- 采购合同
+- 采购统计
+- **优先级**: 中
+- **文件**:
+  - `src-tauri/migrations/011_procurement.sql`
+  - `src-tauri/src/procurement_commands.rs`
+  - `src/types/procurement.ts`
+  - `src/services/procurementService.ts`
+  - `src/stores/procurement.ts`
+  - `src/features/procurement/ProcurementPage.tsx`
+
+### [ ] 12. 销售管理 (Sales Management) 🔄
+- 销售机会
+- 报价管理
+- 销售合同
+- 销售预测
+- 佣金计算
+- 销售业绩
+- **优先级**: 中
+- **文件**:
+  - `src-tauri/migrations/012_sales.sql`
+  - `src-tauri/src/sales_commands.rs`
+  - `src/types/sales.ts`
+  - `src/services/salesService.ts`
+  - `src/stores/sales.ts`
+  - `src/features/sales/SalesPage.tsx`
+
+### [ ] 13. 系统设置 (System Settings) 🔄
+- 系统参数
+- 数据字典
+- 日志管理
+- 备份恢复
+- 权限配置
+- 操作审计
+- **优先级**: 高
+- **文件**:
+  - `src-tauri/migrations/013_settings.sql`
+  - `src-tauri/src/settings_commands.rs`
+  - `src/types/settings.ts`
+  - `src/services/settingsService.ts`
+  - `src/stores/settings.ts`
+  - `src/features/settings/SettingsPage.tsx`
+
+---
+**第二阶段进度**: 1/5 模块完成
+**当前开发**: 项目管理模块
